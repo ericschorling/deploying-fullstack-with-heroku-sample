@@ -1,12 +1,24 @@
 const fetch = require('node-fetch'); // import node-fetch (enables the fetch API to be used server-side)
 const { Pool } = require('pg'); // import node-postgres
 
-const pool = new Pool({ // create connection to database
+
+const devPoolObject ={
+  user: "postgres",
+  password: "ews0310",
+  host: "localhost",
+  port: 5432,
+  database: "my_activities"
+}
+
+const productionPool = { // create connection to database
   connectionString: process.env.DATABASE_URL,	// use DATABASE_URL environment variable from Heroku app 
   ssl: {
     rejectUnauthorized: false // don't check for SSL cert
   }
-});
+}
+
+console.log(process.env.NODE_ENV)
+const pool = new Pool( process.env.NODE_ENV ? productionPool : devPoolObject);
 
 const getAllActivities = (req, res) => {
   const getString = 'SELECT * FROM my_activities'; // select all rows from the 'my_activities' table
