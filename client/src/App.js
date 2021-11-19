@@ -1,17 +1,20 @@
 import React from 'react'
+import {
+  Link
+} from 'react-router-dom'
 
-import ActivitySelector from './components/ActivitySelector'
 import Canvas from './components/Canvas';
+import Home from './components/Home';
 
 function App() {
   
 
   return (
-    <div>
-      <h1> APPs</h1>
-      <Canvas />
-      {/* <ActivitySelector /> */}
-    </div>
+
+      <div>
+        <Home />
+      </div>
+
     
   );
 }

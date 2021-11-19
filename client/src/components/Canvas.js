@@ -29,7 +29,7 @@ const Canvas =()=>{
         imageService
             .getAllImages()
             .then(data => {
-                console.log(data)
+                // console.log(data)
                 setSavedImages(data.images)
         })
         
@@ -104,13 +104,10 @@ const Canvas =()=>{
 
     const saveImages =(evt)=>{
         console.log(savedImages)
-        evt.preventDefault()
-        let width= 600;
-        let height = 400;       
+        evt.preventDefault()     
         
         let canvas = canvasRef.current
         let newSavedImage = canvas.toDataURL()
-        console.log(newSavedImage)
         setSavedImages([...savedImages, {drawing_src: newSavedImage}])
         imageService.addImage({
             drawing_src: `${newSavedImage}`,
@@ -133,6 +130,7 @@ const Canvas =()=>{
 
     return (
         <div className="canvas-holder">
+            <h1>Pictionary with Friends!!</h1>
             <canvas
                 onMouseDown={startDrawing}
                 onMouseUp={finishDrawing}
@@ -142,10 +140,11 @@ const Canvas =()=>{
             />
             <div className="saved-images">
                 <h3>saved images</h3>
-                {
+                {savedImages ? 
                     savedImages.map((image, key)=>(
                         <img key={key} className="drawing" alt='saved drawing' src={image.drawing_src}></img>
                     ))
+                    :null
                 }
                     
                 

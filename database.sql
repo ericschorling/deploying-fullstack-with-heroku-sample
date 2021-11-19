@@ -3,7 +3,7 @@ CREATE TABLE users (
     userName VARCHAR(50) NOT NULL,
     realName  VARCHAR(50),
     lastName VARCHAR(50),
-    avatarSource VARCHAR(8000)
+    avatarSource TEXT
 );
 
 CREATE TABLE drawings(
