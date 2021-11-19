@@ -31,6 +31,15 @@ app.get('/api/activities/delete', (req, res) => {
   services.deleteAllActivites(req, res);
 });
 
+app.get('/api/images', (req, res) => { // route root directory ('/' is this file (app.js))
+
+  services.getAllImages(req, res);
+});
+
+app.post('/api/images', (req, res) => {
+  services.addImageToDB(req, res)
+});
+
 app.listen(PORT, () => { // start server and listen on specified port
   console.log(`App is running on ${PORT}`) // confirm server is running and log port to the console
-}) 
+});

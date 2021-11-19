@@ -1,7 +1,7 @@
 import React from 'react'
 
 import ActivitySelector from './components/ActivitySelector'
-import { DrawingSpace } from './components/DrawingSpace';
+import Canvas from './components/Canvas';
 
 function App() {
   
@@ -9,8 +9,8 @@ function App() {
   return (
     <div>
       <h1> APPs</h1>
-      <ActivitySelector />
-      <DrawingSpace />
+      <Canvas />
+      {/* <ActivitySelector /> */}
     </div>
     
   );

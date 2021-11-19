@@ -63,4 +63,34 @@ const deleteAllActivites = (req, res) => {
     .catch(err => console.log(err));  
 }
 
-module.exports = { getSingleActivity, addActivityToDB, getAllActivities, deleteAllActivites }
+const getAllImages = (req, res) => {
+  const getString = 'SELECT * FROM drawings WHERE userid = 1'; // select all rows from the 'my_activities' table
+  const countString = 'SELECT count(*) FROM drawings' // get total row count from the 'my_activities' table
+  pool.query(getString) // send query to select all rows from the 'my_activities' table 
+    .then(imageResults => {
+      let images = imageResults.rows;
+      pool.query(countString) // send query to get total row count from the 'my_activities' table
+        .then(countResult => {
+          let count = countResult.rows[0].count;
+          console.log('Activities List:', images);
+          console.log(`Activities Count: ${count}`);
+          res.json({ images, count})
+          // res.render('index', { activities: activities, count: count }); // render index.ejs, and send activity and count results to index.ejs
+          // TODO: Send info to frontend 
+        })
+    })
+    .catch(err => console.log(err));
+}
+const addImageToDB = (req, res) => {
+  const imageData =  req.body.drawing_src 
+  const userId = [req.body.userid]
+  console.log(typeof imageData)
+  
+  const addString = 'INSERT INTO drawings (userid, drawing_src) VALUES ($1, $2) RETURNING *'; // insert value into my_activities' table
+
+  pool.query(addString, [+userId, imageData])
+    .then(result => res.json(result))
+    .catch(err => console.log(err));
+}
+
+module.exports = { getSingleActivity, addActivityToDB, getAllActivities, deleteAllActivites, getAllImages, addImageToDB }
