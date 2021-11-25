@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  Link
-} from 'react-router-dom'
-
-import Canvas from './components/Canvas';
-import Home from './components/Home';
+import Landing from './views/Landing';
 
 function App() {
   
@@ -12,7 +7,7 @@ function App() {
   return (
 
       <div>
-        <Home />
+        <Landing />
       </div>
 
     

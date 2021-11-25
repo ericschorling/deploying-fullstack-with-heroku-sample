@@ -64,16 +64,17 @@ const deleteAllActivites = (req, res) => {
 }
 
 const getAllImages = (req, res) => {
-  const getString = 'SELECT * FROM drawings WHERE userid = 1'; // select all rows from the 'my_activities' table
-  const countString = 'SELECT count(*) FROM drawings' // get total row count from the 'my_activities' table
-  pool.query(getString) // send query to select all rows from the 'my_activities' table 
+  const userID = req.body.userId
+  console.log(userID)
+  const getString = 'SELECT * FROM drawings WHERE userid = ($1)'; // select all rows from the 'my_activities' table
+  const countString = 'SELECT count(*) FROM drawings WHERE userid = ($1)' // get total row count from the 'my_activities' table
+  pool.query(getString, [+userID]) // send query to select all rows from the 'my_activities' table 
     .then(imageResults => {
       let images = imageResults.rows;
-      pool.query(countString) // send query to get total row count from the 'my_activities' table
+      console.log(userID)
+      pool.query(countString, [+userID]) // send query to get total row count from the 'my_activities' table
         .then(countResult => {
           let count = countResult.rows[0].count;
-          console.log('Activities List:', images);
-          console.log(`Activities Count: ${count}`);
           res.json({ images, count})
           // res.render('index', { activities: activities, count: count }); // render index.ejs, and send activity and count results to index.ejs
           // TODO: Send info to frontend 
@@ -81,16 +82,41 @@ const getAllImages = (req, res) => {
     })
     .catch(err => console.log(err));
 }
+const getLoggedInUser = (req, res) =>{
+  console.log(req.body)
+  const username = req.body.user
+
+  const getString ='SELECT * FROM users WHERE username = ($1)'
+
+  pool.query(getString, [username])
+    .then(userResults => {
+      console.log(userResults.rows)
+      res.json(userResults.rows)
+    })
+    .catch(err => console.log(err))
+}
 const addImageToDB = (req, res) => {
   const imageData =  req.body.drawing_src 
-  const userId = [req.body.userid]
-  console.log(typeof imageData)
-  
+  const userId = req.body.userid
+  console.log(userId)
+  console.log(imageData)
   const addString = 'INSERT INTO drawings (userid, drawing_src) VALUES ($1, $2) RETURNING *'; // insert value into my_activities' table
 
-  pool.query(addString, [+userId, imageData])
-    .then(result => res.json(result))
+  pool.query(addString, [userId, imageData])
+    .then(result => res.json(result.rows))
     .catch(err => console.log(err));
 }
 
-module.exports = { getSingleActivity, addActivityToDB, getAllActivities, deleteAllActivites, getAllImages, addImageToDB }
+const addUser = (req, res) => {
+  const fName =  req.body.fName;
+  const lName = req.body.lName;
+  const userName = req.body.userName;
+  const email = req.body.email
+  const addString = 'INSERT INTO users (username, realname, lastname, email) VALUES ($1, $2, $3, $4) RETURNING *'; // insert value into my_activities' table
+
+  pool.query(addString, [userName, fName, lName, email])
+    .then(result => res.json(result.rows))
+    .catch(err => console.log(err));
+}
+
+module.exports = { getSingleActivity, addActivityToDB, getAllActivities, deleteAllActivites, getAllImages, addImageToDB, getLoggedInUser, addUser }

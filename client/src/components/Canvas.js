@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import imageService from '../services/images'
+import Footer from './Footer'
+import Navbar from './Navbar'
 
 const start_background_color = "white"
 const undo_array = []
@@ -8,15 +11,18 @@ const Canvas =()=>{
 
     const canvasRef = useRef(null)
     const contextRef = useRef(null)
+    const canvasContainer = useRef(null)
     const [isDrawing, setIsDrawing] = useState(false)
     const [isReset, setIsReset] = useState()
     const [savedImages, setSavedImages] = useState([])
+    const [showSaved, setShowSaved] = useState(false)
+    const userID = useSelector(state => state.user.userID)
 
 
     useEffect(() => {
         setIsReset(false)
         const canvas = canvasRef.current;
-        canvas.width = 600;
+        canvas.width = canvasContainer.current.offsetWidth;
         canvas.height = 400;
         canvas.style.width = `${canvas.width}px`
         canvas.style.height = `${canvas.height}px`
@@ -25,16 +31,8 @@ const Canvas =()=>{
 
         context.fillStyle = start_background_color;
         context.fillRect(0, 0, canvas.width, canvas.height);
-
-        imageService
-            .getAllImages()
-            .then(data => {
-                // console.log(data)
-                setSavedImages(data.images)
-        })
+        console.log(userID)
         
-        
-
         // context.scale(2,2)
         context.lineCap = 'round'
         context.strokeStyle = 'black'
@@ -108,56 +106,88 @@ const Canvas =()=>{
         
         let canvas = canvasRef.current
         let newSavedImage = canvas.toDataURL()
-        setSavedImages([...savedImages, {drawing_src: newSavedImage}])
+        savedImages ? setSavedImages([...savedImages, {drawing_src: newSavedImage}]) : setSavedImages([{drawing_src: newSavedImage}])
+        console.log(userID)
         imageService.addImage({
             drawing_src: `${newSavedImage}`,
-            userid: 1
+            userid: userID
         })
     }
 
-    const loadImage = (evt)=>{
+    const _handleGallery =(evt) =>{
         evt.preventDefault()
-        contextRef.current.putImageData(savedImages[0], 0, 0);
+        showSaved ? setShowSaved(false) : setShowSaved(true)
+        imageService
+            .getAllImages({
+              userId: userID
+            })
+            .then(data => {
+                // console.log(data)
+                setSavedImages(data.images)
+        })
     }
 
-    const handleAddImage = (userId, newImageData) => {
-        imageService
-          .addImage({
-            user: userId,
-            imageArr: newImageData
-          })
-      }
-
     return (
-        <div className="canvas-holder">
-            <h1>Pictionary with Friends!!</h1>
-            <canvas
-                onMouseDown={startDrawing}
-                onMouseUp={finishDrawing}
-                onMouseMove={draw}
-                onMouseLeave={leaveCanvas}
-                ref={canvasRef}
-            />
-            <div className="saved-images">
-                <h3>saved images</h3>
-                {savedImages ? 
-                    savedImages.map((image, key)=>(
-                        <img key={key} className="drawing" alt='saved drawing' src={image.drawing_src}></img>
-                    ))
-                    :null
-                }
-                    
+        <>
+            <div className="container px-4 mx-auto flex flex-wrap items-center justify-between"
+            >
+                <Navbar draw />
+                <div className="canvas-holder rounded" ref={canvasContainer} >
                 
+                    <h1 class="text-6xl font-normal leading-normal mt-0 mb-2 text-black-800">
+                        Let's Draw
+                    </h1>
+                    <canvas
+                        onMouseDown={startDrawing}
+                        onMouseUp={finishDrawing}
+                        onMouseMove={draw}
+                        onMouseLeave={leaveCanvas}
+                        onTouchStart={startDrawing}
+                        onTouchEnd={finishDrawing}
+                        onTouchMove={draw}
+                        ref={canvasRef}
+                        className="canvas-screen"
+                        
+                    />
+                    
+                    <div className="button-bar">
+                        <input onInput={(evt)=>colorPicker(evt)} type="color" className="rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" ></input>
+                        <input onChange={(evt)=>penSize(evt)} type="range" min="1" max="100" class="pen-range" step="1" id="range"></input>
+                        
+                        <button onClick={(evt)=>setEraser(evt)} type="button" className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" ><i className="fas fa-eraser"/></button>
+                        <button onClick={(e)=>undoLast(e)} type="button" className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"><i className="fas fa-undo"/></button>
+                        <button onClick={(e)=>clearDrawing(e)} type="button" className="bg-red-500 text-white active:bg-lightBlue-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"><i className="fas fa-trash-alt"/></button>
+                        
+                        <button onClick={(e)=>saveImages(e)} type="button" className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"><i className="fas fa-save"/></button>
+                        {/* <button onClick={(e)=>loadImage(e)} type="button" className="button"><i className="fas fa-load"/></button> */}
+                    </div>
+                    <div className="gallery">
+                        <button 
+                            className="bg-indigo-500 text-white active:bg-indigo-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" 
+                            type="button"
+                            onClick={(evt)=>_handleGallery(evt)}
+                        >
+                            <i className="fas fa-images"></i>
+                            Gallery
+                        </button>
+                        {showSaved ? 
+                            <div className="saved-images">
+                                {savedImages ? 
+                                    savedImages.map((image, key)=>(
+                                        <a className="drawing" href={image.drawing_src} target="_blank" rel="noreferrer">
+                                            <img key={key} alt='saved drawing' src={image.drawing_src}></img>
+                                        </a>
+                                    ))
+                                    :null
+                                }
+                            </div>
+                            : null
+                        }
+                    </div>
+                </div> 
             </div>
-            <input onInput={(evt)=>colorPicker(evt)} type="color" class="color-picker"></input>
-            <input onChange={(evt)=>penSize(evt)} type="range" min="1" max="100" class="pen-range" step="1" ></input>
-            <button onClick={(evt)=>setEraser(evt)} type="button" className="eraser">Erase</button>
-            
-            <button onClick={(e)=>clearDrawing(e)} type="button" className="button">Clear</button>
-            <button onClick={(e)=>undoLast(e)} type="button" className="button">Undo</button>
-            <button onClick={(e)=>saveImages(e)} type="button" className="button">Save</button>
-            <button onClick={(e)=>loadImage(e)} type="button" className="button">Load</button>
-        </div> 
+            <Footer />
+        </>
     )
 }
 
